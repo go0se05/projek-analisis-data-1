@@ -4,8 +4,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Load dataset
-days_df = pd.read_csv("days_processed.csv")
-hours_df = pd.read_csv("hours_processed.csv")
+days_df = pd.read_csv("dashboard/days_processed.csv")
+hours_df = pd.read_csv("dashboard/hours_processed.csv")
 
 # Streamlit UI
 st.title("📊 Analisis Peminjaman Sepeda")
