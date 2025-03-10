@@ -35,7 +35,11 @@ if day_type == "Semua":
     sns.barplot(x=labels, y=rental_means, hue=labels, legend=False, palette=custom_palette, ax=ax)
 else:
     label = "Hari Kerja" if day_type == "Hari Kerja" else "Akhir Pekan"
-    mean_value = rental_means.values[0]
+    if rental_means.empty:
+        mean_value = 0
+    else:
+        mean_value = rental_means.values[0]
+        
     sns.barplot(x=[label], y=[mean_value], hue=[label], legend=False, palette=custom_palette, ax=ax)
 
 
