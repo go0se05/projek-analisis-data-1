@@ -20,7 +20,7 @@ Google colab-notebook .
 2. Dashboard
 ```
 cd dashboard
-streamlit run main.py
+streamlit run app.py
 ```
 
 ## Streamlit cloud link
