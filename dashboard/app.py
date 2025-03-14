@@ -141,7 +141,7 @@ st.header("Pengaruh Cuaca terhadap Jumlah Peminjaman di Berbagai Jam")
 
 st.subheader("Rata-rata Penyewaan Per Jam Berdasarkan Cuaca")
 fig7, ax7 = plt.subplots(figsize=(10, 6))
-sns.lineplot(x=hours_df["hour"], y=hours_df.groupby(["hour", "weather_condition"])["total_rentals"].mean().reset_index().sort_values("hour")["total_rentals"], hue=hours_df["weather_condition"].astype(str))
+sns.lineplot(x=hour_df["hour"], y=hour_df.groupby(["hour", "weather_condition"])["total_rentals"].mean().reset_index().sort_values("hour")["total_rentals"], hue=hour_df["weather_condition"].astype(str))
 ax7.set_xlabel("Hour")
 ax7.set_ylabel("Average Rentals")
 ax7.set_title("Hourly Bike Rentals Based on Weather Condition")
