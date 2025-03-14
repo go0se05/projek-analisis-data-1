@@ -17,7 +17,7 @@ selected_weather = st.sidebar.multiselect("Select weather Condition", day_df["we
 
 # Apply filters
 if selected_date:
-    day_df = day_df[pd.to_datetime(day_df['dteday']).isin(selected_date)]
+    day_df = day_df[pd.to_datetime(day_df['date']).isin(selected_date)]
 if selected_season:
     day_df = day_df[day_df["season"].isin(selected_season)]
 if selected_weather:
