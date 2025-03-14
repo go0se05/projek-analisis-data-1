@@ -1,129 +1,173 @@
 import streamlit as st
 import pandas as pd
-import seaborn as sns
 import matplotlib.pyplot as plt
+import seaborn as sns
 
-# Load dataset
-days_df = pd.read_csv("dashboard/days_processed.csv")
-hours_df = pd.read_csv("dashboard/hours_processed.csv")
+# Load datasets
+day_df = pd.read_csv("dashboard/days_processed.csv")
+hour_df = pd.read_csv("dashboard/hours_processed.csv")
 
-# Streamlit UI
-st.title("📊 Analisis Peminjaman Sepeda")
+st.title("Bike Sharing Data Exploration Dashboard")
+
+# Filtering options
 st.sidebar.header("Filter Data")
+selected_date = st.sidebar.date_input("Select Date Range", [])
+selected_season = st.sidebar.multiselect("Select Season", day_df["season"].unique())
+selected_weather = st.sidebar.multiselect("Select Weather Condition", day_df["weathersit"].unique())
 
-# Filter untuk jenis hari
-# Filter bulan
-month_dict = {
-    1: "Januari", 2: "Februari", 3: "Maret", 4: "April", 5: "Mei", 6: "Juni",
-    7: "Juli", 8: "Agustus", 9: "September", 10: "Oktober", 11: "November", 12: "Desember"
-}
-selected_month = st.sidebar.selectbox("Pilih Bulan", list(month_dict.keys()), format_func=lambda x: month_dict[x])
+# Apply filters
+if selected_date:
+    day_df = day_df[pd.to_datetime(day_df['dteday']).isin(selected_date)]
+if selected_season:
+    day_df = day_df[day_df["season"].isin(selected_season)]
+if selected_weather:
+    day_df = day_df[day_df["weathersit"].isin(selected_weather)]
 
-# Filter data berdasarkan bulan yang dipilih
-filtered_df = days_df[days_df["month"] == selected_month]
+# 1. Perbedaan jumlah peminjaman pada hari kerja vs. akhir pekan
+st.header("Perbedaan Jumlah Peminjaman pada Hari Kerja vs. Akhir Pekan")
 
-day_type = st.sidebar.selectbox("Pilih Jenis Hari", ["Semua", "Hari Kerja", "Akhir Pekan"])
-if day_type == "Hari Kerja":
-    days_df = days_df[days_df['workingday'] == 1]
-elif day_type == "Akhir Pekan":
-    days_df = days_df[days_df['workingday'] == 0]
+st.subheader("Rata-rata Penyewaan")
+fig1, ax1 = plt.subplots(figsize=(10, 6))
+sns.barplot(ax=ax1, x=["Weekend", "Weekday"], 
+            y=day_df.groupby("workingday")["cnt"].mean().values, 
+            palette='pastel')
+ax1.set_xlabel("Day Type")
+ax1.set_ylabel("Average Total Rentals")
+ax1.set_title("Average Bike Rentals")
+ax1.grid(axis="y", linestyle="--", alpha=0.7)
+st.pyplot(fig1)
 
-# Filter untuk kondisi cuaca
-weather_options = {1: "Cerah", 2: "Mendung", 3: "Hujan", 4: "Salju"}
-weather_choice = st.sidebar.multiselect("Pilih Kondisi Cuaca", options=list(weather_options.keys()), format_func=lambda x: weather_options[x])
-if weather_choice:
-    days_df = days_df[days_df['weather_condition'].isin(weather_choice)]
-
-# Visualisasi 1: Perbedaan jumlah peminjaman pada hari kerja vs akhir pekan
-
-fig, ax = plt.subplots(figsize=(6, 4))
-rental_means = days_df.groupby("workingday")["total_rentals"].mean()
-custom_palette = {"Hari Kerja": "#F39E60", "Akhir Pekan": "#89A8B2"}
-
-if day_type == "Semua":
-    labels = ["Akhir Pekan", "Hari Kerja"]
-    sns.barplot(x=labels, y=rental_means, hue=labels, legend=False, palette=custom_palette, ax=ax)
-else:
-    label = "Hari Kerja" if day_type == "Hari Kerja" else "Akhir Pekan"
-
-    if rental_means.empty:
-        mean_value = 0
-    else:
-        mean_value = rental_means.values[0]
-
-    sns.barplot(x=[label], y=[mean_value], hue=[label], legend=False, palette=custom_palette, ax=ax)
-
-
-ax.set_ylabel("Rata-rata Peminjaman")
-ax.set_xlabel("Jenis Hari")
-ax.set_title("Peminjaman Sepeda: Hari Kerja vs Akhir Pekan")
-st.pyplot(fig)
-
+st.subheader("Total Penyewaan")
+fig2, ax2 = plt.subplots(figsize=(11, 7))
+workday_totals = day_df.groupby("workingday")["cnt"].sum()
+sns.barplot(ax=ax2, y=['Weekend', 'Weekday'], x=workday_totals.values, palette='pastel')
+ax2.set_ylabel("Day Type")
+ax2.set_xlabel("Total Rentals")
+ax2.set_title("Total Bike Rentals: Weekday vs Weekend")
+ax2.grid(axis="x", linestyle="--", alpha=0.7)
+st.pyplot(fig2)
+st.write("\n**Rata-rata Penyewaan**")
 st.write("\n**Insight:**")
-st.write("- Peminjaman sepeda lebih tinggi pada hari kerja dibanding akhir pekan.")
+st.write("- Rata-rata peminjaman sepeda lebih tinggi pada hari kerja dibanding akhir pekan.")
 st.write("- Ini menunjukkan bahwa mayoritas pengguna sepeda adalah pekerja atau mahasiswa yang menggunakannya untuk keperluan mobilitas harian.")
 
-# Visualisasi 2: Pengaruh cuaca terhadap jumlah peminjaman
-st.subheader("🌦️ Pengaruh Kondisi Cuaca terhadap jumlah Peminjaman Sepeda")
-fig, ax = plt.subplots(figsize=(6, 4))
-sns.barplot(
-    x=days_df["weather_condition"], 
-    y=days_df["total_rentals"], 
-    hue=days_df["weather_condition"], 
-    legend=False, 
-    palette="coolwarm", 
-    ax=ax
-    )
-ax.set_xlabel("Kondisi Cuaca")
-ax.set_ylabel("Rata-rata Peminjaman")
-ax.set_title("Pengaruh Cuaca terhadap Peminjaman Sepeda")
-st.pyplot(fig)
-
+st.write("\n**Total Penyewaan:**")
 st.write("\n**Insight:**")
-st.write("- Peminjaman sepeda lebih rendah saat cuaca buruk (hujan/salju), dibandingkan saat cerah.")
-st.write("- Ini bisa menjadi faktor penting dalam mengelola stok sepeda di musim hujan.")
+st.write("- Total penyewaan sepeda di hari kerja jauh lebih tinggi dibandingkan akhir pekan.")
+st.write("- Hal ini mengindikasikan bahwa pengguna sepeda dalam jumlah besar lebih aktif pada hari kerja, kemungkinan besar sebagai alternatif transportasi utama di perkotaan.")
 
-# Visualisasi 3: Tren peminjaman berdasarkan jam (hour_df)
-st.subheader("⏰ Jam Puncak Peminjaman Sepeda")
-fig, ax = plt.subplots(figsize=(8, 4))
-sns.lineplot(
-    x=hours_df.groupby("hour")["total_rentals"].mean().index,
-    y=hours_df.groupby("hour")["total_rentals"].mean().values,
-    marker="o", color="royalblue", ax=ax)
-ax.set_xlabel("Jam")
-ax.set_ylabel("Rata-rata Peminjaman")
-ax.set_title("Tren Peminjaman Sepeda per Jam")
-st.pyplot(fig, clear_figure=True)
+st.markdown("---")
 
-st.write ("- Puncak peminjaman terjadi pada jam sibuk: pagi (07:00 - 09:00) dan sore (17:00 - 19:00).")
-st.write ("- Ini menunjukkan bahwa banyak pengguna memakai sepeda sebagai moda transportasi untuk bekerja/sekolah.")
-st.write ("- Ada kemungkinan perbedaan pola peminjaman antara pekerja kantoran dan mahasiswa.")
-st.write ("- Bisa jadi layanan rental sepeda bisa lebih optimal jika ada harga dinamis berdasarkan jam sibuk dan jam sepi.")
+# 2. Pengaruh kondisi cuaca terhadap jumlah peminjaman
+import matplotlib.ticker as mticker
+st.header("Pengaruh Kondisi Cuaca terhadap Jumlah Peminjaman")
 
-# Visualisasi 4: Pengaruh cuaca terhadap peminjaman di berbagai jam
-st.subheader("☁️ Pengaruh cuaca terhadap peminjaman di berbagai jam")
-fig = sns.displot(
-    data=hours_df,
-    x="total_rentals",
-    hue="weather_condition",
+st.subheader("Penyewaan Sepeda Berdasarkan Cuaca")
+fig3, ax3 = plt.subplots(figsize=(10, 6))
+cnt = day_df.groupby("weathersit")["cnt"].sum().astype(int)
+sns.lineplot(x=cnt.index.astype(int), y=cnt.values, marker='o')
+ax3.set_xlabel("Weather Condition")
+ax3.set_ylabel("Total Rentals")
+ax3.set_title("Bike Rentals by Weather Condition")
+ax3.set_xticks(cnt.index.astype(int))
+ax3.grid(axis="y", linestyle="--", alpha=0.7)
+ax3.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'{int(x):,}'))
+st.pyplot(fig3)
+
+st.subheader("Rata-rata Penyewaan Perkondisi Cuaca")
+fig4, ax4 = plt.subplots(figsize=(10, 6)) 
+weather_avg = day_df.groupby("weathersit")["cnt"].mean()
+sns.barplot(ax=ax4, x=weather_avg.index, y=weather_avg.values, palette='pastel')
+ax4.set_xlabel("Weather Condition")
+ax4.set_ylabel("Average Rentals")
+ax4.set_title("Average Bike Rentals per Weather Condition")
+ax4.grid(axis="y", linestyle="--", alpha=0.7)
+ax4.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'{int(x):,}'))
+st.pyplot(fig4)
+st.write("\n**Penyewaan Berdasarkan Cuaca**")
+st.write("\n**Insight:**")
+st.write("- Dari boxplot, terlihat bahwa jumlah peminjaman sepeda paling tinggi terjadi saat cuaca cerah atau sedikit berawan (kategori 1).")
+st.write("- Saat cuaca berkabut (kategori 2), jumlah peminjaman mulai menurun, meskipun masih dalam jumlah yang cukup signifikan.")
+st.write("- Pada cuaca hujan (kategori 3), menunjukkan distribusi yang lebih rendah, dengan beberapa pencilan yang mengindikasikan peminjaman tetap terjadi meskipun jumlahnya lebih sedikit.")
+
+st.write("\n**Rata-rata Penyewaan per-Kondisi Cuaca**")
+st.write("\n**Insight:**")
+st.write("- Rata-rata penyewaan tertinggi terjadi saat cuaca cerah atau sedikit berawan (kategori 1), yang jauh lebih tinggi dibandingkan kondisi cuaca lainnya.")
+st.write("- Cuaca berkabut atau mendung (kategori 2) masih memungkinkan jumlah peminjaman yang cukup besar, meskipun ada penurunan dibandingkan cuaca cerah.")
+st.write("- Saat hujan dan salju (kategori 3), jumlah penyewaan menurun drastis, menunjukkan bahwa faktor cuaca sangat memengaruhi keputusan pengguna dalam menyewa sepeda.")
+
+st.markdown("---")
+
+# 3. Jam puncak penyewaan sepeda
+st.header("Jam Puncak Penyewaan Sepeda")
+
+st.subheader("Total Penyewaan Per Jam")
+fig5, ax5 = plt.subplots(figsize=(10, 5))
+sns.lineplot(ax=ax5, x=hour_df["hr"], y=hour_df.groupby("hr")["cnt"].mean(), marker='o')
+ax5.set_xlabel("Hour")
+ax5.set_ylabel("Average Rentals")
+ax5.set_title("Peak Bike Rental Hours")
+ax5.grid(axis="y", linestyle="--", alpha=0.7)
+st.pyplot(fig5)
+
+st.subheader("Perbandingan Jam Sibuk vs Non-Sibuk")
+rush_hours = hour_df[(hour_df["hr"] >= 7) & (hour_df["hr"] <= 9) | (hour_df["hr"] >= 17) & (hour_df["hr"] <= 19)]
+non_rush_hours = hour_df[~hour_df["hr"].isin(rush_hours["hr"])]
+
+rush_avg = rush_hours["cnt"].mean()
+non_rush_avg = non_rush_hours["cnt"].mean()
+
+fig6, ax6 = plt.subplots(figsize=(8, 5))
+sns.barplot(ax=ax6, x=["Rush Hours", "Non-Rush Hours"], y=[rush_avg, non_rush_avg], palette='pastel')
+ax6.set_xlabel("Time Period")
+ax6.set_ylabel("Average Rentals")
+ax6.set_title("Comparison of Bike Rentals During Rush & Non-Rush Hours")
+ax6.grid(axis="y", linestyle="--", alpha=0.7)
+st.pyplot(fig6)
+st.write("\n**Total penyewaan per-jam**")
+st.write("\n**Insight:**")
+st.write("- Puncak penyewaan terjadi pada pagi hari sekitar pukul 8 dan sore hari sekitar pukul 17-18.")
+st.write("- Ini menunjukkan bahwa mayoritas pengguna sepeda kemungkinan besar  adalah pekerja atau pelajar yang menggunakan sepeda untuk perjalanan ke dan dari tempat kerja/sekolah.")
+
+st.write("\n**Perbandingan Jam Sibuk vs Non-Sibuk**")
+st.write("\n**Insight:**")
+st.write("- Rata-rata penyewaan pada jam sibuk (pagi dan sore) lebih tinggi dibandingkan dengan jam non-sibuk.")
+st.write("- Hal ini semakin memperkuat dugaan bahwa penyewaan sepeda sangat dipengaruhi oleh pola aktivitas harian masyarakat.")
+
+st.markdown("---")
+
+# 4. Pengaruh cuaca terhadap jumlah peminjaman di berbagai jam
+st.header("Pengaruh Cuaca terhadap Jumlah Peminjaman di Berbagai Jam")
+
+st.subheader("Rata-rata Penyewaan Per Jam Berdasarkan Cuaca")
+fig7, ax7 = plt.subplots(figsize=(10, 6))
+sns.lineplot(ax=ax7, x=hour_df["hr"], y=hour_df.groupby(["hr", "weathersit"])["cnt"].mean().reset_index().sort_values("hr")["cnt"], hue=hour_df["weathersit"].astype(str))
+ax7.set_xlabel("Hour")
+ax7.set_ylabel("Average Rentals")
+ax7.set_title("Hourly Bike Rentals Based on Weather Condition")
+ax7.grid(axis="y", linestyle="--", alpha=0.7)
+st.pyplot(fig7)
+
+st.subheader("Distribusi Penyewaan Sepeda Berdasarkan Cuaca")
+fig8 = sns.displot(
+    data=hour_df,
+    x="cnt",
+    hue="weathersit",
     kind="kde",
     multiple="stack",
     palette="viridis",
     alpha=0.7,
     height=6,
     aspect=1.5
-).figure  # Ambil figure dari seaborn
-st.pyplot(fig, clear_figure=True)
+)
+st.pyplot(fig8)
+st.write("\n**Penyewaan Per Jam Berdasarkan Cuaca**")
 st.write("\n**Insight:**")
-st.write("- Cuaca buruk berdampak signifikan pada penurunan jumlah penyewaan di semua jam.")
-st.write("- Namun, jam sibuk tetap menunjukkan peminjaman lebih tinggi meskipun cuaca kurang baik.")
-st.write("- Mungkin ada pengguna yang tetap menggunakan sepeda meskipun hujan, kemungkinan besar mereka yang tidak memiliki alternatif transportasi lain.")
-st.write("- Bisa jadi implementasi fitur seperti penyewaan mantel hujan atau jalur sepeda yang lebih terlindungi dari hujan dapat meningkatkan kenyamanan pengguna.")
+st.write("- Jumlah penyewaan sepeda cenderung lebih rendah saat cuaca buruk (kode cuaca lebih tinggi.")
+st.write("- Tren penyewaan tetap mengikuti pola harian, dengan puncak di pagi dan sore hari, tetapi intensitasnya lebih rendah saat cuaca tidak mendukung.")
 
-st.markdown("---")  # Garis horizontal sebagai pemisah
+st.write("\n**Dsitribusi Penyewaan Sepeda Berdasarkan Cuaca**")
+st.write("\n**Insight:**")
+st.write("- Jumlah penyewaan sepeda cenderung lebih rendah saat cuaca buruk (kode cuaca lebih tinggi")
+st.write("- Tren penyewaan tetap mengikuti pola harian, dengan puncak di pagi dan sore hari, tetapi intensitasnya lebih rendah saat cuaca tidak mendukung.")
 
-st.subheader("\n📌**Kesimpulan:**")
-st.write("- Hari kerja memiliki jumlah peminjaman lebih tinggi dibanding akhir pekan.")
-st.write("- Peminjaman sepeda menurun saat kondisi cuaca buruk.")
-st.write("- Puncak peminjaman terjadi pada jam 07:00–09:00 dan 17:00–19:00 pada hari kerja.")
-st.write("- Pada akhir pekan, peminjaman lebih stabil antara jam 10:00–16:00.")
