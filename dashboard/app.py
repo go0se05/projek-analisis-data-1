@@ -69,7 +69,7 @@ sns.lineplot(x=weather_totals.index.astype(int), y=weather_totals.values, marker
 ax3.set_xlabel("Weather Condition")
 ax3.set_ylabel("Total Rentals")
 ax3.set_title("Bike Rentals by Weather Condition")
-ax3.set_xticks(cnt.index.astype(int))
+ax3.set_xticks(weather_totals.index.astype(int))
 ax3.grid(axis="y", linestyle="--", alpha=0.7)
 ax3.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'{int(x):,}'))
 st.pyplot(fig3)
