@@ -176,6 +176,6 @@ st.markdown("---")
 st.subheader("\n📌**Kesimpulan:**")
 st.write("- Hari kerja memiliki jumlah peminjaman lebih tinggi dibanding akhir pekan.")
 st.write("- Peminjaman sepeda menurun saat kondisi cuaca buruk.")
-st.write("- Puncak peminjaman terjadi pada jam 07:00–09:00 dan 17:00–19:00 pada hari kerja.")
+st.write("- Puncak peminjaman terjadi pada jam 07:00–09:00 dan 17:00–18:00 pada hari kerja.")
 st.write("- Pada akhir pekan, peminjaman lebih stabil antara jam 10:00–16:00.")
 
