@@ -21,7 +21,7 @@ if selected_date:
 if selected_season:
     day_df = day_df[day_df["season"].isin(selected_season)]
 if selected_weather:
-    day_df = day_df[day_df["weathersit"].isin(selected_weather)]
+    day_df = day_df[day_df["weather_condition"].isin(selected_weather)]
 
 # 1. Perbedaan jumlah peminjaman pada hari kerja vs. akhir pekan
 st.header("Perbedaan Jumlah Peminjaman pada Hari Kerja vs. Akhir Pekan")
@@ -29,7 +29,7 @@ st.header("Perbedaan Jumlah Peminjaman pada Hari Kerja vs. Akhir Pekan")
 st.subheader("Rata-rata Penyewaan")
 fig1, ax1 = plt.subplots(figsize=(10, 6))
 sns.barplot(ax=ax1, x=["Weekend", "Weekday"], 
-            y=day_df.groupby("workingday")["cnt"].mean().values, 
+            y=day_df.groupby("workingday")["total_rentals"].mean().values, 
             palette='pastel')
 ax1.set_xlabel("Day Type")
 ax1.set_ylabel("Average Total Rentals")
@@ -39,7 +39,7 @@ st.pyplot(fig1)
 
 st.subheader("Total Penyewaan")
 fig2, ax2 = plt.subplots(figsize=(11, 7))
-workday_totals = day_df.groupby("workingday")["cnt"].sum()
+workday_totals = day_df.groupby("workingday")["total_rentals"].sum()
 sns.barplot(ax=ax2, y=['Weekend', 'Weekday'], x=workday_totals.values, palette='pastel')
 ax2.set_ylabel("Day Type")
 ax2.set_xlabel("Total Rentals")
@@ -64,7 +64,7 @@ st.header("Pengaruh Kondisi Cuaca terhadap Jumlah Peminjaman")
 
 st.subheader("Penyewaan Sepeda Berdasarkan Cuaca")
 fig3, ax3 = plt.subplots(figsize=(10, 6))
-cnt = day_df.groupby("weathersit")["cnt"].sum().astype(int)
+cnt = day_df.groupby("weather_condition")["totals_rentals"].sum().astype(int)
 sns.lineplot(x=cnt.index.astype(int), y=cnt.values, marker='o')
 ax3.set_xlabel("Weather Condition")
 ax3.set_ylabel("Total Rentals")
@@ -76,7 +76,7 @@ st.pyplot(fig3)
 
 st.subheader("Rata-rata Penyewaan Perkondisi Cuaca")
 fig4, ax4 = plt.subplots(figsize=(10, 6)) 
-weather_avg = day_df.groupby("weathersit")["cnt"].mean()
+weather_avg = day_df.groupby("weather_condition")["total_rentals"].mean()
 sns.barplot(ax=ax4, x=weather_avg.index, y=weather_avg.values, palette='pastel')
 ax4.set_xlabel("Weather Condition")
 ax4.set_ylabel("Average Rentals")
@@ -103,7 +103,7 @@ st.header("Jam Puncak Penyewaan Sepeda")
 
 st.subheader("Total Penyewaan Per Jam")
 fig5, ax5 = plt.subplots(figsize=(10, 5))
-sns.lineplot(ax=ax5, x=hour_df["hr"], y=hour_df.groupby("hr")["cnt"].mean(), marker='o')
+sns.lineplot(ax=ax5, x=hour_df["hr"], y=hour_df.groupby("hour")["total_rentals"].mean(), marker='o')
 ax5.set_xlabel("Hour")
 ax5.set_ylabel("Average Rentals")
 ax5.set_title("Peak Bike Rental Hours")
@@ -111,8 +111,8 @@ ax5.grid(axis="y", linestyle="--", alpha=0.7)
 st.pyplot(fig5)
 
 st.subheader("Perbandingan Jam Sibuk vs Non-Sibuk")
-rush_hours = hour_df[(hour_df["hr"] >= 7) & (hour_df["hr"] <= 9) | (hour_df["hr"] >= 17) & (hour_df["hr"] <= 19)]
-non_rush_hours = hour_df[~hour_df["hr"].isin(rush_hours["hr"])]
+rush_hours = hour_df[(hour_df["hour"] >= 7) & (hour_df["hour"] <= 9) | (hour_df["hour"] >= 17) & (hour_df["hour"] <= 19)]
+non_rush_hours = hour_df[~hour_df["hour"].isin(rush_hours["hour"])]
 
 rush_avg = rush_hours["cnt"].mean()
 non_rush_avg = non_rush_hours["cnt"].mean()
@@ -141,7 +141,7 @@ st.header("Pengaruh Cuaca terhadap Jumlah Peminjaman di Berbagai Jam")
 
 st.subheader("Rata-rata Penyewaan Per Jam Berdasarkan Cuaca")
 fig7, ax7 = plt.subplots(figsize=(10, 6))
-sns.lineplot(ax=ax7, x=hour_df["hr"], y=hour_df.groupby(["hr", "weathersit"])["cnt"].mean().reset_index().sort_values("hr")["cnt"], hue=hour_df["weathersit"].astype(str))
+sns.lineplot(x=hours_df["hour"], y=hours_df.groupby(["hour", "weather_condition"])["total_rentals"].mean().reset_index().sort_values("hour")["total_rentals"], hue=hours_df["weather_condition"].astype(str))
 ax7.set_xlabel("Hour")
 ax7.set_ylabel("Average Rentals")
 ax7.set_title("Hourly Bike Rentals Based on Weather Condition")
