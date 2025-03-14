@@ -13,7 +13,7 @@ st.title("Bike Sharing Data Exploration Dashboard")
 st.sidebar.header("Filter Data")
 selected_date = st.sidebar.date_input("Select Date Range", [])
 selected_season = st.sidebar.multiselect("Select Season", day_df["season"].unique())
-selected_weather = st.sidebar.multiselect("Select Weather Condition", day_df["wheather_condition"].unique())
+selected_weather = st.sidebar.multiselect("Select weather Condition", day_df["weather_condition"].unique())
 
 # Apply filters
 if selected_date:
