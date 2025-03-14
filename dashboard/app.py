@@ -64,7 +64,7 @@ st.header("Pengaruh Kondisi Cuaca terhadap Jumlah Peminjaman")
 
 st.subheader("Penyewaan Sepeda Berdasarkan Cuaca")
 fig3, ax3 = plt.subplots(figsize=(10, 6))
-cnt = day_df.groupby("weather_condition")["totals_rentals"].sum().astype(int)
+total_rentals = day_df.groupby("weather_condition")["totals_rentals"].sum().astype(int)
 sns.lineplot(x=total_rentals.index.astype(int), y=total_rentals.values, marker='o')
 ax3.set_xlabel("Weather Condition")
 ax3.set_ylabel("Total Rentals")
