@@ -115,7 +115,7 @@ rush_hours = hour_df[(hour_df["hour"] >= 7) & (hour_df["hour"] <= 9) | (hour_df[
 non_rush_hours = hour_df[~hour_df["hour"].isin(rush_hours["hour"])]
 
 rush_avg = rush_hours["total_rentals"].mean()
-non_rush_avg = non_rush_hours["cnt"].mean()
+non_rush_avg = non_rush_hours["total_rentals"].mean()
 
 fig6, ax6 = plt.subplots(figsize=(8, 5))
 sns.barplot(ax=ax6, x=["Rush Hours", "Non-Rush Hours"], y=[rush_avg, non_rush_avg], palette='pastel')
