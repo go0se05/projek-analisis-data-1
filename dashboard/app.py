@@ -151,8 +151,8 @@ st.pyplot(fig7)
 st.subheader("Distribusi Penyewaan Sepeda Berdasarkan Cuaca")
 fig8 = sns.displot(
     data=hour_df,
-    x="cnt",
-    hue="weathersit",
+    x="total_rentals",
+    hue="weather_condition",
     kind="kde",
     multiple="stack",
     palette="viridis",
