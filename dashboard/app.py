@@ -114,7 +114,7 @@ st.subheader("Perbandingan Jam Sibuk vs Non-Sibuk")
 rush_hours = hour_df[(hour_df["hour"] >= 7) & (hour_df["hour"] <= 9) | (hour_df["hour"] >= 17) & (hour_df["hour"] <= 19)]
 non_rush_hours = hour_df[~hour_df["hour"].isin(rush_hours["hour"])]
 
-rush_avg = rush_hours["cnt"].mean()
+rush_avg = rush_hours["total_rentals"].mean()
 non_rush_avg = non_rush_hours["cnt"].mean()
 
 fig6, ax6 = plt.subplots(figsize=(8, 5))
